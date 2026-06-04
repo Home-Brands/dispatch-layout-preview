@@ -1,0 +1,446 @@
+{
+  "_meta": {
+    "models": {
+      "route": "A named lane on the dispatch board. Flexible by design — can represent an install crew, a sales rep, a service technician, a remediation team, or any other unit a brand wants to schedule against. Each route has its own color and one or more assigned members.",
+      "member": "A person assigned to a route. Typically a technician or sales rep; a route can have one or more members.",
+      "visit": "A scheduled unit of field work placed on a route at a specific day and time. Carries customer, property, service type, duration, and current status.",
+      "visitStatus": "A configurable label + color that represents where a visit is in its lifecycle. The default set covers Scheduled, En route, On site, Completed, Cancelled, and No-show, but brands can add/edit these.",
+      "unassignedVisit": "A visit that needs to be scheduled but has not yet been placed on a route. Lives in the unassigned queue panel.",
+      "aiSuggestion": "A system-generated recommendation to place a specific unassigned visit on a specific route at a specific time, with a rationale.",
+      "anomaly": "A system-flagged issue on a route — e.g., overbooked, impossible drive time, or missed SLA. Attached to a route with a reason and severity.",
+      "weekRange": "The current date range displayed on the board (Monday through Sunday)."
+    },
+    "relationships": [
+      "A route has many members",
+      "A route has many visits (within a given week)",
+      "A visit belongs to exactly one route",
+      "A visit has one visitStatus",
+      "An unassignedVisit becomes a visit when placed on a route",
+      "An anomaly belongs to one route",
+      "An aiSuggestion references one unassignedVisit and proposes one route + start time"
+    ]
+  },
+  "weekRange": {
+    "start": "2026-04-13",
+    "end": "2026-04-19",
+    "todayIso": "2026-04-13"
+  },
+  "statuses": [
+    { "id": "scheduled", "label": "Scheduled", "color": "slate", "isDefault": true },
+    { "id": "en_route", "label": "En route", "color": "amber", "isDefault": true },
+    { "id": "on_site", "label": "On site", "color": "emerald", "isDefault": true },
+    { "id": "completed", "label": "Completed", "color": "indigo", "isDefault": true },
+    { "id": "cancelled", "label": "Cancelled", "color": "rose", "isDefault": true },
+    { "id": "no_show", "label": "No-show", "color": "rose", "isDefault": true }
+  ],
+  "routes": [
+    {
+      "id": "route-crew-north",
+      "name": "Crew North",
+      "description": "Residential crawl space service — North Richmond territory",
+      "color": "indigo",
+      "members": [
+        { "id": "m-1", "name": "Mike Vasquez", "role": "Lead Technician", "avatarInitials": "MV" },
+        { "id": "m-2", "name": "Juan Reyes", "role": "Technician", "avatarInitials": "JR" }
+      ]
+    },
+    {
+      "id": "route-crew-south",
+      "name": "Crew South",
+      "description": "Residential crawl space service — South Richmond territory",
+      "color": "emerald",
+      "members": [
+        { "id": "m-3", "name": "DeShawn Carter", "role": "Lead Technician", "avatarInitials": "DC" }
+      ]
+    },
+    {
+      "id": "route-sales-sarah",
+      "name": "Sarah Chen — Sales",
+      "description": "In-home moisture assessments and new-customer consultations",
+      "color": "violet",
+      "members": [
+        { "id": "m-4", "name": "Sarah Chen", "role": "Sales Rep", "avatarInitials": "SC" }
+      ]
+    },
+    {
+      "id": "route-install-alpha",
+      "name": "Install Team Alpha",
+      "description": "Full encapsulations, dehumidifier and sump pump installs",
+      "color": "sky",
+      "members": [
+        { "id": "m-5", "name": "James Holloway", "role": "Install Lead", "avatarInitials": "JH" },
+        { "id": "m-6", "name": "Priya Patel", "role": "Installer", "avatarInitials": "PP" }
+      ]
+    },
+    {
+      "id": "route-commercial",
+      "name": "Commercial Route",
+      "description": "Commercial accounts — churches, offices, GC job sites",
+      "color": "amber",
+      "members": [
+        { "id": "m-7", "name": "Elena Vasquez", "role": "Commercial Tech", "avatarInitials": "EV" }
+      ]
+    },
+    {
+      "id": "route-float",
+      "name": "Float / On-call",
+      "description": "Flexible route for overflow, emergencies, and training ride-alongs",
+      "color": "rose",
+      "members": []
+    }
+  ],
+  "visits": [
+    {
+      "id": "v-1001",
+      "routeId": "route-crew-north",
+      "customerName": "Margaret Huntley",
+      "propertyAddress": "2134 Grove Ave, Richmond, VA",
+      "serviceType": "Annual encapsulation inspection",
+      "start": "2026-04-13T08:30:00-04:00",
+      "durationMinutes": 90,
+      "statusId": "on_site",
+      "notes": "Gate code 4217. Dog in backyard — friendly."
+    },
+    {
+      "id": "v-1002",
+      "routeId": "route-crew-north",
+      "customerName": "David & Li Wen Kim",
+      "propertyAddress": "2844 Hermitage Rd, Richmond, VA",
+      "serviceType": "Moisture assessment — crawl space inspection",
+      "start": "2026-04-13T10:00:00-04:00",
+      "durationMinutes": 90,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1003",
+      "routeId": "route-crew-north",
+      "customerName": "Patricia Okafor",
+      "propertyAddress": "3201 W Franklin St, Richmond, VA",
+      "serviceType": "Mold remediation follow-up — antimicrobial treatment",
+      "start": "2026-04-14T09:00:00-04:00",
+      "durationMinutes": 240,
+      "statusId": "scheduled",
+      "notes": "Second visit — check treated joists from 4/6 remediation."
+    },
+    {
+      "id": "v-1004",
+      "routeId": "route-crew-north",
+      "customerName": "Whitlock Residence",
+      "propertyAddress": "5102 Cary Street Rd, Richmond, VA",
+      "serviceType": "Dehumidifier filter service — Aprilaire E080",
+      "start": "2026-04-16T13:30:00-04:00",
+      "durationMinutes": 60,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1005",
+      "routeId": "route-crew-south",
+      "customerName": "First Presbyterian Westover",
+      "propertyAddress": "4800 Patterson Ave, Richmond, VA",
+      "serviceType": "Basement crawl space moisture assessment",
+      "start": "2026-04-13T09:00:00-04:00",
+      "durationMinutes": 180,
+      "statusId": "en_route",
+      "notes": "Facilities manager Rachel meeting tech on site. Historic church — access through fellowship hall."
+    },
+    {
+      "id": "v-1006",
+      "routeId": "route-crew-south",
+      "customerName": "Raul & Sofia Delacroix",
+      "propertyAddress": "1108 Maple Shade Ln, Richmond, VA",
+      "serviceType": "Sump pump install — standard",
+      "start": "2026-04-13T13:00:00-04:00",
+      "durationMinutes": 180,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1007",
+      "routeId": "route-crew-south",
+      "customerName": "Kaylee Richardson",
+      "propertyAddress": "3420 Forest Hill Ave, Richmond, VA",
+      "serviceType": "Vapor barrier install — 6 mil, 1,100 sq ft",
+      "start": "2026-04-15T11:00:00-04:00",
+      "durationMinutes": 300,
+      "statusId": "scheduled",
+      "notes": "Two cats will be kept upstairs during service."
+    },
+    {
+      "id": "v-1008",
+      "routeId": "route-crew-south",
+      "customerName": "Raul & Sofia Delacroix",
+      "propertyAddress": "1108 Maple Shade Ln, Richmond, VA",
+      "serviceType": "Sump pump — post-install check",
+      "start": "2026-04-17T13:00:00-04:00",
+      "durationMinutes": 60,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1009",
+      "routeId": "route-sales-sarah",
+      "customerName": "Derek Blackwood",
+      "propertyAddress": "4407 Bellevue Ave, Richmond, VA",
+      "serviceType": "Full encapsulation — moisture assessment & estimate",
+      "start": "2026-04-13T10:30:00-04:00",
+      "durationMinutes": 120,
+      "statusId": "scheduled",
+      "notes": "Large 1928 home (2,300 sq ft crawl). Customer requested itemized proposal."
+    },
+    {
+      "id": "v-1010",
+      "routeId": "route-sales-sarah",
+      "customerName": "Callahan Residence",
+      "propertyAddress": "1108 N 25th St, Richmond, VA",
+      "serviceType": "New customer consultation — crawl space assessment",
+      "start": "2026-04-14T14:00:00-04:00",
+      "durationMinutes": 60,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1011",
+      "routeId": "route-sales-sarah",
+      "customerName": "Brightleaf Builders",
+      "propertyAddress": "917 Hanover Ave, Richmond, VA",
+      "serviceType": "Pre-pour vapor barrier bid — new build",
+      "start": "2026-04-16T09:00:00-04:00",
+      "durationMinutes": 120,
+      "statusId": "scheduled",
+      "notes": "Bring sample contract — they've asked for lifetime transferable warranty terms in writing."
+    },
+    {
+      "id": "v-1012",
+      "routeId": "route-install-alpha",
+      "customerName": "Derek Blackwood",
+      "propertyAddress": "4407 Bellevue Ave, Richmond, VA",
+      "serviceType": "Full encapsulation day 1 — 20 mil vapor barrier + dehumidifier",
+      "start": "2026-04-15T08:00:00-04:00",
+      "durationMinutes": 540,
+      "statusId": "scheduled",
+      "notes": "Two-day install. Coordinate with Sarah's estimate from 4/13 visit."
+    },
+    {
+      "id": "v-1013",
+      "routeId": "route-install-alpha",
+      "customerName": "Margaret Huntley",
+      "propertyAddress": "2134 Grove Ave, Richmond, VA",
+      "serviceType": "Joist sister + girder repair — 4 jack posts",
+      "start": "2026-04-17T09:00:00-04:00",
+      "durationMinutes": 360,
+      "statusId": "scheduled",
+      "notes": "Access through exterior crawl door. Homeowner wants to inspect repairs before final invoice."
+    },
+    {
+      "id": "v-1014",
+      "routeId": "route-commercial",
+      "customerName": "Church Hill Market",
+      "propertyAddress": "2501 E Broad St, Richmond, VA",
+      "serviceType": "Annual encapsulation inspection",
+      "start": "2026-04-13T06:30:00-04:00",
+      "durationMinutes": 90,
+      "statusId": "completed",
+      "notes": "Pre-open inspection. Manager signed off at 8:05 AM."
+    },
+    {
+      "id": "v-1015",
+      "routeId": "route-commercial",
+      "customerName": "Scott's Addition Office Park",
+      "propertyAddress": "3001 W Leigh St, Richmond, VA",
+      "serviceType": "Dehumidifier install — Aprilaire E100",
+      "start": "2026-04-14T07:00:00-04:00",
+      "durationMinutes": 240,
+      "statusId": "scheduled",
+      "notes": "3 buildings, key from security desk. Install in Building B crawl."
+    },
+    {
+      "id": "v-1016",
+      "routeId": "route-commercial",
+      "customerName": "Brightleaf Builders",
+      "propertyAddress": "917 Hanover Ave, Richmond, VA",
+      "serviceType": "Pre-pour vapor barrier install — 1,800 sq ft",
+      "start": "2026-04-15T07:30:00-04:00",
+      "durationMinutes": 360,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1017",
+      "routeId": "route-commercial",
+      "customerName": "Stuart Circle Medical Plaza",
+      "propertyAddress": "413 Stuart Cir, Richmond, VA",
+      "serviceType": "Interior French drain install — 60 linear ft",
+      "start": "2026-04-16T08:00:00-04:00",
+      "durationMinutes": 420,
+      "statusId": "scheduled",
+      "notes": "Facility requires all work in unoccupied basement zone. Use low-odor sealants only."
+    },
+    {
+      "id": "v-1018",
+      "routeId": "route-commercial",
+      "customerName": "First Presbyterian Westover",
+      "propertyAddress": "4800 Patterson Ave, Richmond, VA",
+      "serviceType": "Annual encapsulation inspection",
+      "start": "2026-04-17T06:30:00-04:00",
+      "durationMinutes": 90,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1019",
+      "routeId": "route-crew-north",
+      "customerName": "Oduya Household",
+      "propertyAddress": "4400 Chamberlayne Ave, Richmond, VA",
+      "serviceType": "Crawl space door replacement — insulated",
+      "start": "2026-04-15T15:00:00-04:00",
+      "durationMinutes": 120,
+      "statusId": "cancelled",
+      "notes": "Customer cancelled — rescheduling to next week."
+    },
+    {
+      "id": "v-1020",
+      "routeId": "route-crew-north",
+      "customerName": "Tom & Jenna Ashworth",
+      "propertyAddress": "715 N 30th St, Richmond, VA",
+      "serviceType": "Pre-listing sump pump + vapor barrier install",
+      "start": "2026-04-18T10:00:00-04:00",
+      "durationMinutes": 300,
+      "statusId": "scheduled",
+      "notes": "Realtor referral — closing contingent on work completion."
+    },
+    {
+      "id": "v-1021",
+      "routeId": "route-crew-south",
+      "customerName": "Henderson Family",
+      "propertyAddress": "5612 Monument Ave, Richmond, VA",
+      "serviceType": "Pre-listing moisture assessment — referral from Carly Morales",
+      "start": "2026-04-18T14:00:00-04:00",
+      "durationMinutes": 90,
+      "statusId": "scheduled",
+      "notes": ""
+    },
+    {
+      "id": "v-1022",
+      "routeId": "route-sales-sarah",
+      "customerName": "Fan District Property Group",
+      "propertyAddress": "2701 Monument Ave, Richmond, VA",
+      "serviceType": "Multi-property encapsulation service contract walkthrough",
+      "start": "2026-04-17T11:00:00-04:00",
+      "durationMinutes": 90,
+      "statusId": "scheduled",
+      "notes": "Portfolio manager joining — bring 3 years of historic-home encapsulation references."
+    }
+  ],
+  "unassignedQueue": [
+    {
+      "id": "u-2001",
+      "customerName": "Patricia Okafor",
+      "propertyAddress": "3201 W Franklin St, Richmond, VA",
+      "serviceType": "Rigid foam board insulation — rim joist",
+      "requestedWindow": "2026-04-14 AM",
+      "durationMinutes": 180,
+      "priority": "normal",
+      "sourceChannel": "online_booking"
+    },
+    {
+      "id": "u-2002",
+      "customerName": "Blue Moon Cafe",
+      "propertyAddress": "212 W Broad St, Richmond, VA",
+      "serviceType": "Emergency moisture assessment — standing water reported",
+      "requestedWindow": "2026-04-13 ASAP",
+      "durationMinutes": 120,
+      "priority": "urgent",
+      "sourceChannel": "phone"
+    },
+    {
+      "id": "u-2003",
+      "customerName": "Ramirez Household",
+      "propertyAddress": "6815 Forest Ave, Richmond, VA",
+      "serviceType": "Sump pump with battery backup install",
+      "requestedWindow": "2026-04-18 before 2pm",
+      "durationMinutes": 240,
+      "priority": "normal",
+      "sourceChannel": "online_booking"
+    },
+    {
+      "id": "u-2004",
+      "customerName": "Hardywood Brewing",
+      "propertyAddress": "2408 Ownby Ln, Richmond, VA",
+      "serviceType": "Commercial moisture assessment — new account",
+      "requestedWindow": "2026-04-15 or 16",
+      "durationMinutes": 180,
+      "priority": "normal",
+      "sourceChannel": "sales_handoff"
+    },
+    {
+      "id": "u-2005",
+      "customerName": "Lee Residence",
+      "propertyAddress": "3810 Kensington Ave, Richmond, VA",
+      "serviceType": "Crawl space inspection — real estate closing",
+      "requestedWindow": "2026-04-14 before 4pm",
+      "durationMinutes": 90,
+      "priority": "urgent",
+      "sourceChannel": "referral"
+    },
+    {
+      "id": "u-2006",
+      "customerName": "Holloway Estate",
+      "propertyAddress": "301 Malvern Ave, Richmond, VA",
+      "serviceType": "Structural repair consultation — settling joists",
+      "requestedWindow": "Flexible",
+      "durationMinutes": 90,
+      "priority": "low",
+      "sourceChannel": "online_booking"
+    }
+  ],
+  "aiSuggestions": [
+    {
+      "id": "s-3001",
+      "unassignedVisitId": "u-2001",
+      "proposedRouteId": "route-crew-north",
+      "proposedStart": "2026-04-14T13:30:00-04:00",
+      "rationale": "Crew North is already at the Okafor property Tuesday morning for the mold remediation follow-up. Adding the rim joist insulation back-to-back saves a second trip.",
+      "confidence": 0.86
+    },
+    {
+      "id": "s-3002",
+      "unassignedVisitId": "u-2002",
+      "proposedRouteId": "route-commercial",
+      "proposedStart": "2026-04-13T15:30:00-04:00",
+      "rationale": "Blue Moon is a commercial account in Elena's zone and she clears her last scheduled visit at 14:30 today. Emergency assessment can be completed before close.",
+      "confidence": 0.92
+    },
+    {
+      "id": "s-3003",
+      "unassignedVisitId": "u-2005",
+      "proposedRouteId": "route-sales-sarah",
+      "proposedStart": "2026-04-14T10:30:00-04:00",
+      "rationale": "Pre-listing inspections route to Sales per brand config. Sarah has open capacity Tuesday morning and the property is 1.8 mi from her 2 PM Callahan stop.",
+      "confidence": 0.78
+    }
+  ],
+  "anomalies": [
+    {
+      "id": "a-4001",
+      "routeId": "route-install-alpha",
+      "severity": "warning",
+      "label": "Tight drive time",
+      "reason": "Blackwood full encapsulation runs until 17:00 Wednesday — but Huntley joist repair starts 09:00 Friday, leaving no buffer for material load-out Thursday evening.",
+      "affectedDate": "2026-04-15"
+    },
+    {
+      "id": "a-4002",
+      "routeId": "route-crew-south",
+      "severity": "info",
+      "label": "Light day",
+      "reason": "DeShawn has only 1 visit scheduled Saturday. Unassigned queue has 2 south-side jobs that fit.",
+      "affectedDate": "2026-04-18"
+    }
+  ],
+  "currentScope": {
+    "brand": "Crawlspace Medic",
+    "location": "Richmond, VA"
+  }
+}
