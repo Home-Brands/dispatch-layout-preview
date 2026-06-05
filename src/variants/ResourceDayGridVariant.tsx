@@ -6,16 +6,12 @@ import { data, localDate, minutesOfDay, weekDays } from '../data/model';
 import { routeEdge } from '../theme-maps';
 import { packLanes } from './grid-shared';
 
-// Fit the time axis to the data's actual span (whole hours), like the week
-// grid — so a single day shows top-to-bottom without an empty late-day tail
-// hanging below the fold. Global window (all visits) keeps the axis stable
-// when switching days.
+// Show the full operating day (6a–7p) with hours, including empty afternoon
+// slots — dispatchers want to see open capacity, not just booked time.
 const PX_PER_HOUR = 56;
 const PX_PER_MIN = PX_PER_HOUR / 60;
-const allStarts = data.visits.map((v) => minutesOfDay(v.start));
-const allEnds = data.visits.map((v) => minutesOfDay(v.start) + v.durationMinutes);
-const START_MIN = Math.floor(Math.min(...allStarts) / 60) * 60;
-const END_MIN = Math.ceil(Math.max(...allEnds) / 60) * 60;
+const START_MIN = 6 * 60; // 6:00a
+const END_MIN = 19 * 60; // 7:00p
 const GRID_HEIGHT = ((END_MIN - START_MIN) / 60) * PX_PER_HOUR;
 const HOURS = Array.from({ length: (END_MIN - START_MIN) / 60 + 1 }, (_, i) => START_MIN / 60 + i);
 
@@ -101,6 +97,10 @@ export function ResourceDayGridVariant({
           );
         })}
       </div>
+
+      {/* Scroll-past room — so the pane always has give and never feels like a
+          dead box, even when the calendar fits the screen. */}
+      <div className="h-[40vh] shrink-0" aria-hidden />
     </div>
   );
 }
