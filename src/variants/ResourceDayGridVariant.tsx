@@ -2,18 +2,22 @@ import { DayPicker } from '../components/DayPicker';
 import { GridVisitBlock } from '../components/GridVisitBlock';
 import { HourGutter } from '../components/HourGutter';
 import { StatusLegend } from '../components/StatusLegend';
-import { data, localDate, weekDays } from '../data/model';
+import { data, localDate, minutesOfDay, weekDays } from '../data/model';
 import { routeEdge } from '../theme-maps';
-import {
-  GRID_HEIGHT,
-  HOURS,
-  heightPx,
-  packLanes,
-  PX_PER_HOUR,
-  topPx,
-  DAY_START_MIN,
-  PX_PER_MIN,
-} from './grid-shared';
+import { packLanes } from './grid-shared';
+
+// Fit the time axis to the data's actual span (whole hours), like the week
+// grid — so a single day shows top-to-bottom without an empty late-day tail
+// hanging below the fold. Global window (all visits) keeps the axis stable
+// when switching days.
+const PX_PER_HOUR = 56;
+const PX_PER_MIN = PX_PER_HOUR / 60;
+const allStarts = data.visits.map((v) => minutesOfDay(v.start));
+const allEnds = data.visits.map((v) => minutesOfDay(v.start) + v.durationMinutes);
+const START_MIN = Math.floor(Math.min(...allStarts) / 60) * 60;
+const END_MIN = Math.ceil(Math.max(...allEnds) / 60) * 60;
+const GRID_HEIGHT = ((END_MIN - START_MIN) / 60) * PX_PER_HOUR;
+const HOURS = Array.from({ length: (END_MIN - START_MIN) / 60 + 1 }, (_, i) => START_MIN / 60 + i);
 
 /**
  * Resource day-grid — a single day, one column per route (the "resource"),
@@ -58,7 +62,7 @@ export function ResourceDayGridVariant({
         ))}
 
         {/* Time gutter */}
-        <HourGutter hours={HOURS} startMin={DAY_START_MIN} pxPerMin={PX_PER_MIN} height={GRID_HEIGHT} />
+        <HourGutter hours={HOURS} startMin={START_MIN} pxPerMin={PX_PER_MIN} height={GRID_HEIGHT} />
 
         {/* Route columns for the selected day */}
         {data.routes.map((route) => {
@@ -87,8 +91,8 @@ export function ResourceDayGridVariant({
                 <GridVisitBlock
                   key={visit.id}
                   visit={visit}
-                  top={topPx(visit)}
-                  height={heightPx(visit)}
+                  top={Math.max(0, (minutesOfDay(visit.start) - START_MIN) * PX_PER_MIN)}
+                  height={Math.max(22, visit.durationMinutes * PX_PER_MIN)}
                   left={`calc(${(lane * 100) / laneCount}% + 2px)`}
                   width={`calc(${100 / laneCount}% - 4px)`}
                 />

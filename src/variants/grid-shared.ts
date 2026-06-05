@@ -1,30 +1,8 @@
 import { minutesOfDay, type Visit } from '../data/model';
 
-// Shared geometry for the two time-grid variants (Week grid, Day grid).
-// The visible window is 7:00–19:00 (matches the app's picker bounds, with a
-// little headroom). Pixel height is fixed so blocks position deterministically.
-
-export const DAY_START_MIN = 6 * 60; // 6:00a — sample data has 6:30a starts
-export const DAY_END_MIN = 19 * 60; // 7:00p
-export const PX_PER_HOUR = 56;
-export const PX_PER_MIN = PX_PER_HOUR / 60;
-export const GRID_HEIGHT = ((DAY_END_MIN - DAY_START_MIN) / 60) * PX_PER_HOUR;
-
-/** Hour tick rows for the time gutter / background lines. */
-export const HOURS: number[] = Array.from(
-  { length: (DAY_END_MIN - DAY_START_MIN) / 60 + 1 },
-  (_, i) => DAY_START_MIN / 60 + i,
-);
-
-/** Top offset (px) for a visit, clamped to the visible window. */
-export function topPx(visit: Visit): number {
-  return Math.max(0, (minutesOfDay(visit.start) - DAY_START_MIN) * PX_PER_MIN);
-}
-
-/** Height (px) for a visit, with a readable minimum. */
-export function heightPx(visit: Visit): number {
-  return Math.max(22, visit.durationMinutes * PX_PER_MIN);
-}
+// Lane packing for the time-grid variants. Each variant owns its own time
+// window + pixel scale (fit to its data); the only thing they share is how
+// overlapping visits get placed side-by-side.
 
 export interface PlacedVisit {
   visit: Visit;
