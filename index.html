@@ -12,19 +12,6 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <script>
-      // Apply the stored/system theme before first paint to avoid a flash.
-      // Mirrors next-themes' class strategy (.dark on <html>).
-      (function () {
-        try {
-          var stored = localStorage.getItem('theme');
-          var dark = stored
-            ? stored === 'dark'
-            : window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (dark) document.documentElement.classList.add('dark');
-        } catch (e) {}
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>

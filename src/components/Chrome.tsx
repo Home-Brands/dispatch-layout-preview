@@ -1,6 +1,5 @@
 import { FEEDBACK_FORM_URL, VARIANTS, type VariantKey } from '../config';
 import { data, dayLabel, weekDays } from '../data/model';
-import { ThemeToggle } from './ThemeToggle';
 
 function FeedbackButton({ variant }: { variant: VariantKey }) {
   if (FEEDBACK_FORM_URL) {
@@ -59,7 +58,6 @@ export function Chrome({
           <span className="num text-xs text-slate-400 dark:text-slate-500">{weekLabel}</span>
         </div>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <FeedbackButton variant={variant} />
         </div>
       </div>
