@@ -5,7 +5,7 @@ import { data, hourLabel, localDate, minutesOfDay, weekDays } from '../data/mode
 import { routeEdge } from '../theme-maps';
 
 const LABEL_W = 176;
-const ROW_H = 56;
+const ROW_H = 64;
 const PX_PER_HOUR = 88;
 const PX_PER_MIN = PX_PER_HOUR / 60;
 

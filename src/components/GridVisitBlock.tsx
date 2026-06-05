@@ -4,8 +4,8 @@ import { statusBadge, statusEdge } from '../theme-maps';
 // Content tiers by available height. The left edge bar always conveys status,
 // so on short blocks we drop the (redundant) badge first, then the service
 // line — instead of letting overflow clip a half-rendered label.
-const SHOW_SERVICE_MIN = 30;
-const SHOW_BADGE_MIN = 46;
+const SHOW_SERVICE_MIN = 34;
+const SHOW_BADGE_MIN = 52;
 
 /**
  * Absolutely-positioned visit block for the time-grid variants. Same visual
@@ -42,17 +42,17 @@ export function GridVisitBlock({
       />
       <div className="py-0.5 pl-2 pr-1 leading-tight">
         <div className="flex items-baseline gap-1">
-          <span className="num shrink-0 text-[9px] font-semibold text-slate-500 dark:text-slate-400">{fmtTime(visit.start)}</span>
-          <span className="line-clamp-1 text-[10px] font-semibold text-slate-900 dark:text-slate-50">
+          <span className="num shrink-0 text-[10px] font-semibold text-slate-500 dark:text-slate-400">{fmtTime(visit.start)}</span>
+          <span className="line-clamp-1 text-[11px] font-semibold text-slate-900 dark:text-slate-50">
             {visit.customerName}
           </span>
         </div>
         {showService && (
-          <div className="line-clamp-1 text-[9px] text-slate-600 dark:text-slate-300">{visit.serviceType}</div>
+          <div className="line-clamp-1 text-[10px] text-slate-600 dark:text-slate-300">{visit.serviceType}</div>
         )}
         {showBadge && (
           <span
-            className={`mt-0.5 inline-flex items-center rounded-sm px-1 py-px font-mono text-[8px] font-bold uppercase tracking-wider ${statusBadge[status.color]}`}
+            className={`mt-0.5 inline-flex items-center rounded-sm px-1 py-px font-mono text-[9px] font-bold uppercase tracking-wider ${statusBadge[status.color]}`}
           >
             {status.label}
           </span>
