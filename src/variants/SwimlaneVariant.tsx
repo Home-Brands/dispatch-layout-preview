@@ -3,7 +3,6 @@ import {
   anomaliesForRoute,
   data,
   dayLabel,
-  fmtTime,
   localDate,
   minutesOfDay,
   weekDays,
@@ -103,9 +102,6 @@ export function SwimlaneVariant() {
                 const visits = data.visits
                   .filter((v) => v.routeId === route.id && localDate(v.start) === day)
                   .sort((a, b) => minutesOfDay(a.start) - minutesOfDay(b.start));
-                const suggestions = data.aiSuggestions.filter(
-                  (s) => s.proposedRouteId === route.id && localDate(s.proposedStart) === day,
-                );
                 const isToday = day === todayIso;
                 const hasAnomaly = anomalies.some((a) => a.affectedDate === day);
 
@@ -119,23 +115,6 @@ export function SwimlaneVariant() {
                     {visits.map((v) => (
                       <VisitTile key={v.id} visit={v} />
                     ))}
-                    {suggestions.map((s) => {
-                      const u = data.unassignedQueue.find((x) => x.id === s.unassignedVisitId);
-                      return (
-                        <div
-                          key={s.id}
-                          title={s.rationale}
-                          className="rounded-md border border-dashed border-indigo-300 bg-indigo-50/50 px-2 py-1.5 dark:border-indigo-500/40 dark:bg-indigo-500/10"
-                        >
-                          <div className="num text-[9px] font-semibold text-indigo-500 dark:text-indigo-300">
-                            AI · {fmtTime(s.proposedStart)}
-                          </div>
-                          <div className="line-clamp-1 text-[10px] font-medium text-indigo-700 dark:text-indigo-200">
-                            {u?.customerName ?? 'Suggested visit'}
-                          </div>
-                        </div>
-                      );
-                    })}
                   </div>
                 );
               })}

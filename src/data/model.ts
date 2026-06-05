@@ -113,10 +113,6 @@ export function anomaliesForRoute(routeId: string): Anomaly[] {
   return data.anomalies.filter((a) => a.routeId === routeId);
 }
 
-export function suggestionForUnassigned(unassignedVisitId: string): AiSuggestion | undefined {
-  return data.aiSuggestions.find((s) => s.unassignedVisitId === unassignedVisitId);
-}
-
 // ---------------------------------------------------------------------------
 // Timezone-safe date/time helpers.
 //
@@ -174,4 +170,20 @@ export function fmtDuration(minutes: number): string {
   const h = Math.floor(min / 60);
   const r = min % 60;
   return r === 0 ? `${h}h` : `${h}h ${r}m`;
+}
+
+/** Compact 12-hour label for an hour-of-day integer: '6a', '12p', '5p'. */
+export function hourLabel(hour24: number): string {
+  const suffix = hour24 >= 12 ? 'p' : 'a';
+  const h = hour24 % 12 || 12;
+  return `${h}${suffix}`;
+}
+
+/** Minutes-of-day (e.g. 870) → compact 12-hour time '2:30p'. */
+export function fmtMinutes(totalMin: number): string {
+  const h = Math.floor(totalMin / 60) % 24;
+  const m = totalMin % 60;
+  const suffix = h >= 12 ? 'p' : 'a';
+  const displayH = h % 12 || 12;
+  return m === 0 ? `${displayH}${suffix}` : `${displayH}:${String(m).padStart(2, '0')}${suffix}`;
 }

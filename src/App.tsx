@@ -3,6 +3,8 @@ import { UnassignedRail } from './components/UnassignedRail';
 import { DEFAULT_VARIANT, isVariant, type VariantKey } from './config';
 import { data, weekDays } from './data/model';
 import { useUrl } from './useUrl';
+import { AgendaVariant } from './variants/AgendaVariant';
+import { GanttBoardVariant } from './variants/GanttBoardVariant';
 import { ResourceDayGridVariant } from './variants/ResourceDayGridVariant';
 import { SwimlaneVariant } from './variants/SwimlaneVariant';
 import { WeekGridVariant } from './variants/WeekGridVariant';
@@ -31,6 +33,10 @@ export function App() {
         {variant === 'resource' && (
           <ResourceDayGridVariant day={day} onDayChange={(d) => update({ day: d })} />
         )}
+        {variant === 'gantt' && (
+          <GanttBoardVariant day={day} onDayChange={(d) => update({ day: d })} />
+        )}
+        {variant === 'agenda' && <AgendaVariant />}
         <UnassignedRail />
       </div>
     </div>

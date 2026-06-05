@@ -4,13 +4,16 @@
 // see which layout a respondent was looking at.
 //
 // Leave it empty to ship without a feedback link (the button hides itself).
-export const FEEDBACK_FORM_URL = '';
+export const FEEDBACK_FORM_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSfIN0zzwa5BgW9sIPEhcYaA287HjBdbGJaZC71NUQu801Ac9A/viewform';
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const VARIANTS = [
-  { key: 'swimlane', label: 'Route swimlanes', blurb: 'Current design — a lane per route' },
-  { key: 'week', label: 'Week grid', blurb: 'Calendar week, colored by route' },
+  { key: 'swimlane', label: 'Route (no hour grid)', blurb: 'Current design — a lane per route, visits stacked (no time axis)' },
+  { key: 'week', label: 'Week by Route (with hour grid)', blurb: 'Per-route week, each route an hourly timeline, stacked' },
   { key: 'resource', label: 'Day grid', blurb: 'One day, a column per route' },
+  { key: 'gantt', label: 'Gantt board', blurb: 'One day, routes as rows, time runs left→right' },
+  { key: 'agenda', label: 'Agenda', blurb: 'The week as a chronological list, grouped by day' },
 ] as const;
 
 export type VariantKey = (typeof VARIANTS)[number]['key'];

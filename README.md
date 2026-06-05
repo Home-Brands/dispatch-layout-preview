@@ -14,10 +14,12 @@ compare structure, not content. No backend, no auth, no live data.
 | Tab | What it is | Color encodes |
 |-----|-----------|---------------|
 | **Route swimlanes** | Current spec'd design — one horizontal lane per route, 7-day timeline | visit **status** |
-| **Week grid** | Calendar week, day columns × time rows, blocks sized by duration | **route** |
+| **Week grid** | Swimlanes expanded — routes stacked, each with a 7-day hourly timeline | visit **status** |
 | **Day grid** | One day, a column per route (resource view), time down the side | visit **status** |
+| **Gantt board** | One day, routes as rows, time runs left→right, jobs as bars (FSM-standard board) | visit **status** |
+| **Agenda** | The week as a dense chronological list, grouped by day | visit **status** |
 
-State lives in the URL (`?variant=week`, `?variant=resource&day=2026-04-14`), so
+State lives in the URL (`?variant=gantt&day=2026-04-14`, `?variant=agenda`), so
 any view is a shareable deep link.
 
 ## Configure the feedback link (one value)

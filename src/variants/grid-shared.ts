@@ -16,12 +16,6 @@ export const HOURS: number[] = Array.from(
   (_, i) => DAY_START_MIN / 60 + i,
 );
 
-export function hourLabel(hour24: number): string {
-  const suffix = hour24 >= 12 ? 'p' : 'a';
-  const h = hour24 % 12 || 12;
-  return `${h}${suffix}`;
-}
-
 /** Top offset (px) for a visit, clamped to the visible window. */
 export function topPx(visit: Visit): number {
   return Math.max(0, (minutesOfDay(visit.start) - DAY_START_MIN) * PX_PER_MIN);

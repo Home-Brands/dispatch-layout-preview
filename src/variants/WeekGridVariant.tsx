@@ -1,33 +1,95 @@
-import { RouteLegend } from '../components/RouteLegend';
+import { GridVisitBlock } from '../components/GridVisitBlock';
+import { HourGutter } from '../components/HourGutter';
 import {
+  anomaliesForRoute,
   data,
   dayLabel,
-  fmtTime,
   localDate,
-  routeById,
-  statusById,
+  minutesOfDay,
   weekDays,
+  type Route,
 } from '../data/model';
-import { routeSoft, statusDot } from '../theme-maps';
-import {
-  GRID_HEIGHT,
-  HOURS,
-  heightPx,
-  hourLabel,
-  packLanes,
-  PX_PER_HOUR,
-  topPx,
-  DAY_START_MIN,
-  PX_PER_MIN,
-} from './grid-shared';
+import { routeEdge } from '../theme-maps';
+import { packLanes } from './grid-shared';
 
-const COL_TEMPLATE = '56px repeat(7, minmax(150px, 1fr))';
+const COL_TEMPLATE = '52px repeat(7, minmax(150px, 1fr))';
+const PX_PER_HOUR = 40;
+const PX_PER_MIN = PX_PER_HOUR / 60;
+
+// Fit the time window to the data's actual range (whole hours), so bands stay
+// compact instead of spanning a fixed 6a–7p. Shared across every band so the
+// same vertical position means the same time of day in every route.
+const allStarts = data.visits.map((v) => minutesOfDay(v.start));
+const allEnds = data.visits.map((v) => minutesOfDay(v.start) + v.durationMinutes);
+const START_MIN = Math.floor(Math.min(...allStarts) / 60) * 60;
+const END_MIN = Math.ceil(Math.max(...allEnds) / 60) * 60;
+const BAND_HEIGHT = ((END_MIN - START_MIN) / 60) * PX_PER_HOUR;
+const HOURS = Array.from(
+  { length: (END_MIN - START_MIN) / 60 + 1 },
+  (_, i) => START_MIN / 60 + i,
+);
+
+function Avatars({ route }: { route: Route }) {
+  return (
+    <div className="flex -space-x-1">
+      {route.members.slice(0, 3).map((m) => (
+        <span
+          key={m.id}
+          title={`${m.name} — ${m.role}`}
+          className={`num inline-flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold text-white ring-2 ring-white dark:ring-slate-950 ${routeEdge[route.color]}`}
+        >
+          {m.avatarInitials}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** A single day column inside one route's band: that route's visits for that
+ * day, positioned by time and colored by status. */
+function RouteDayColumn({ routeId, day, isToday, hasAnomaly }: {
+  routeId: string;
+  day: string;
+  isToday: boolean;
+  hasAnomaly: boolean;
+}) {
+  const placed = packLanes(
+    data.visits.filter((v) => v.routeId === routeId && localDate(v.start) === day),
+  );
+  return (
+    <div
+      className={`relative border-r border-slate-200 dark:border-slate-800 ${
+        isToday ? 'bg-indigo-50/40 dark:bg-indigo-500/[0.04]' : ''
+      } ${hasAnomaly ? 'ring-1 ring-inset ring-amber-300/70 dark:ring-amber-500/30' : ''}`}
+      style={{ height: BAND_HEIGHT }}
+    >
+      {HOURS.map((h, i) => (
+        <div
+          key={h}
+          className="absolute inset-x-0 border-t border-slate-100 dark:border-slate-800/60"
+          style={{ top: i * PX_PER_HOUR }}
+        />
+      ))}
+      {placed.map(({ visit, lane, laneCount }) => (
+        <GridVisitBlock
+          key={visit.id}
+          visit={visit}
+          top={Math.max(0, (minutesOfDay(visit.start) - START_MIN) * PX_PER_MIN)}
+          height={Math.max(20, visit.durationMinutes * PX_PER_MIN)}
+          left={`calc(${(lane * 100) / laneCount}% + 2px)`}
+          width={`calc(${100 / laneCount}% - 4px)`}
+        />
+      ))}
+    </div>
+  );
+}
 
 /**
- * Week time-grid — a familiar calendar week. Day columns × time rows, every
- * visit a positioned block sized by duration and colored by its ROUTE (so
- * route reads as color rather than as a dedicated lane). Overlapping visits in
- * a day pack side-by-side, calendar-app style.
+ * Week grid — the swimlane view "expanded" with a time-of-day axis. Routes are
+ * stacked vertically (one band each); within a band, the week's 7 days each get
+ * an hourly timeline so visits sit at their real clock times. No two routes
+ * ever share a grid, so a day never shows competing routes. Color encodes
+ * status (the route is already the band).
  */
 export function WeekGridVariant() {
   const days = weekDays(data.weekRange);
@@ -35,91 +97,69 @@ export function WeekGridVariant() {
 
   return (
     <div className="flex-1 overflow-auto">
-      <div className="border-b border-slate-200 px-4 py-2 dark:border-slate-800">
-        <RouteLegend />
-      </div>
-
-      <div className="grid min-w-[1100px]" style={{ gridTemplateColumns: COL_TEMPLATE }}>
-        {/* Header row */}
-        <div className="sticky top-0 z-20 border-b-2 border-r border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900" />
-        {days.map((day) => {
-          const { dow, md } = dayLabel(day);
-          const isToday = day === todayIso;
-          return (
-            <div
-              key={day}
-              className={`sticky top-0 z-10 border-b-2 border-r border-slate-200 px-2 py-2 text-center dark:border-slate-700 ${
-                isToday ? 'bg-indigo-50 dark:bg-indigo-500/10' : 'bg-slate-50 dark:bg-slate-900'
-              }`}
-            >
-              <div className={`text-[10px] font-semibold uppercase tracking-wider ${isToday ? 'text-indigo-600 dark:text-indigo-300' : 'text-slate-400 dark:text-slate-500'}`}>
-                {dow}
+      <div className="min-w-[1100px]">
+        {/* Sticky day header */}
+        <div
+          className="sticky top-0 z-20 grid border-b-2 border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
+          style={{ gridTemplateColumns: COL_TEMPLATE }}
+        >
+          <div />
+          {days.map((day) => {
+            const { dow, md } = dayLabel(day);
+            const isToday = day === todayIso;
+            return (
+              <div
+                key={day}
+                className={`border-l border-slate-200 px-2 py-1.5 text-center dark:border-slate-800 ${
+                  isToday ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''
+                }`}
+              >
+                <span className={`text-[10px] font-semibold uppercase tracking-wider ${isToday ? 'text-indigo-600 dark:text-indigo-300' : 'text-slate-400 dark:text-slate-500'}`}>
+                  {dow}{' '}
+                </span>
+                <span className={`num text-[11px] font-semibold ${isToday ? 'text-indigo-700 dark:text-indigo-200' : 'text-slate-600 dark:text-slate-300'}`}>
+                  {md.replace(/^\w+ /, '')}
+                </span>
               </div>
-              <div className={`num text-xs font-semibold ${isToday ? 'text-indigo-700 dark:text-indigo-200' : 'text-slate-700 dark:text-slate-300'}`}>
-                {md}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Time gutter */}
-        <div className="relative border-r border-slate-200 dark:border-slate-800" style={{ height: GRID_HEIGHT }}>
-          {HOURS.map((h) => (
-            <div
-              key={h}
-              className="num absolute right-1 -translate-y-1/2 text-[9px] text-slate-400 dark:text-slate-500"
-              style={{ top: (h * 60 - DAY_START_MIN) * PX_PER_MIN }}
-            >
-              {hourLabel(h)}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Day columns */}
-        {days.map((day) => {
-          const isToday = day === todayIso;
-          const placed = packLanes(data.visits.filter((v) => localDate(v.start) === day));
+        {/* Route bands, stacked */}
+        {data.routes.map((route) => {
+          const anomalies = anomaliesForRoute(route.id);
           return (
-            <div
-              key={day}
-              className={`relative border-r border-slate-200 dark:border-slate-800 ${isToday ? 'bg-indigo-50/30 dark:bg-indigo-500/[0.03]' : ''}`}
-              style={{ height: GRID_HEIGHT }}
-            >
-              {/* hour lines */}
-              {HOURS.map((h, i) => (
-                <div
-                  key={h}
-                  className="absolute inset-x-0 border-t border-slate-100 dark:border-slate-800/60"
-                  style={{ top: i * PX_PER_HOUR }}
-                />
-              ))}
-              {/* events */}
-              {placed.map(({ visit, lane, laneCount }) => {
-                const route = routeById[visit.routeId];
-                const status = statusById[visit.statusId];
-                if (!route) return null;
-                return (
-                  <div
-                    key={visit.id}
-                    title={`${visit.customerName} — ${visit.serviceType} (${route.name})`}
-                    className={`absolute overflow-hidden rounded-md border px-1.5 py-1 ${routeSoft[route.color]}`}
-                    style={{
-                      top: topPx(visit),
-                      height: heightPx(visit),
-                      left: `calc(${(lane * 100) / laneCount}% + 2px)`,
-                      width: `calc(${100 / laneCount}% - 4px)`,
-                    }}
+            <section key={route.id} className="border-b-4 border-slate-100 dark:border-slate-900">
+              {/* Band header (full width) */}
+              <div className="flex items-center gap-2.5 border-b border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950">
+                <span className={`h-3.5 w-1.5 rounded-full ${routeEdge[route.color]}`} aria-hidden />
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">{route.name}</span>
+                <Avatars route={route} />
+                {anomalies.length > 0 && (
+                  <span
+                    title={anomalies.map((a) => a.reason).join('\n')}
+                    className="inline-flex items-center gap-1 rounded-sm bg-amber-50 px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"
                   >
-                    <div className="flex items-center gap-1">
-                      {status && <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[status.color]}`} aria-hidden />}
-                      <span className="num text-[9px] font-semibold opacity-80">{fmtTime(visit.start)}</span>
-                    </div>
-                    <div className="line-clamp-1 text-[10px] font-semibold leading-tight">{visit.customerName}</div>
-                    <div className="line-clamp-1 text-[9px] leading-tight opacity-75">{visit.serviceType}</div>
-                  </div>
-                );
-              })}
-            </div>
+                    ⚠ {anomalies[0]!.label}
+                  </span>
+                )}
+                <span className="ml-auto truncate text-[10px] text-slate-400 dark:text-slate-500">{route.description}</span>
+              </div>
+
+              {/* Time grid for this route */}
+              <div className="grid" style={{ gridTemplateColumns: COL_TEMPLATE }}>
+                <HourGutter hours={HOURS} startMin={START_MIN} pxPerMin={PX_PER_MIN} height={BAND_HEIGHT} />
+                {days.map((day) => (
+                  <RouteDayColumn
+                    key={day}
+                    routeId={route.id}
+                    day={day}
+                    isToday={day === todayIso}
+                    hasAnomaly={anomalies.some((a) => a.affectedDate === day)}
+                  />
+                ))}
+              </div>
+            </section>
           );
         })}
       </div>
